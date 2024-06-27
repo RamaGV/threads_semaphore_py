@@ -1,0 +1,62 @@
+
+
+import threading
+import time
+import random
+
+class AreaPesca:
+    def __init__(self):
+        self.semaphore = threading.Semaphore(1)
+        self.pinguinos_pescando = 0
+    
+    def pescar(self):
+        self.semaphore.acquire()
+        self.pinguinos_pescando += 1
+    
+    def terminar_pesca(self):
+        self.pinguinos_pescando -= 1
+        self.semaphore.release()
+    
+    def obtener_cantidad_pinguinos(self):
+        return self.pinguinos_pescando
+    
+    def analiza_resultado(pinguinos):
+        # Ordeno los pingüinos por la cantidad de peces pescados.
+        # Utilizo la función lambda para definir el criterio de ordenamiento.
+        pinguinos.sort(key=lambda pinguino: pinguino.peces_pescados, reverse=True)
+        print("Resultados:")
+        for pinguino in pinguinos:
+            print(f"Pinguino {pinguino.id} -> {pinguino.pez * pinguino.peces_pescados}")
+
+class Pinguino(threading.Thread):
+    def __init__(self, area_pesca, id):
+        super().__init__()
+        self.area_pesca = area_pesca
+        self.id = id
+        self.peces_pescados = 0
+        self.pez = "|<°)))><|"
+    
+    def run(self):
+        print(f"Pinguino {self.id} preparado para pescar.")
+        self.area_pesca.pescar()
+        tiempo_pescando = random.randint(1, 5)
+        time.sleep(.5)
+        self.peces_pescados = tiempo_pescando
+        self.area_pesca.terminar_pesca()
+    
+    def imprimir_resultado(self):
+        print(f"Pinguino {self.id} pescó {self.peces_pescados} peces.")
+
+area_pesca = AreaPesca()
+pinguinos = []
+
+for _ in range(5):
+    pinguino = Pinguino(area_pesca, _+1)
+    pinguinos.append(pinguino)
+    pinguino.start()
+
+for pinguino in pinguinos:
+    pinguino.join()
+    pinguino.imprimir_resultado()
+
+AreaPesca.analiza_resultado(pinguinos)
